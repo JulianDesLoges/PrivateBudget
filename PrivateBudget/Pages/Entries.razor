@@ -1,0 +1,57 @@
+﻿@page "/entries"
+@using PrivateBudget.Client.Models;
+@using PrivateBudget.Components
+@inject HttpClient Http
+
+<div class="container-fluid">
+    <div class="row justify-content-md-center">
+        <div class="col p-4">
+            <EntriesComponent @ref="_entries" Entries="App.UserData.Plan.Entries" />
+        </div>
+        <div class="col col-md-auto p-4">
+            <CategoriesComponent @ref="_categories" Categories="App.UserData.Plan.Categories" />
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private EntriesComponent? _entries;
+    private CategoriesComponent? _categories;
+
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (_categories == null)
+            {
+                throw new NullReferenceException("_categories is null.");
+            }
+
+            if (_entries == null)
+            {
+                throw new NullReferenceException("_entries is null.");
+            }
+
+            _categories.CategoriesChanged += CategoriesChanged;
+        }
+    }
+
+
+    private void CategoriesChanged()
+    {
+        // Update all entries with a category that is no longer in the list of categories to "no category" O(n*m)!!
+        foreach (var entry in App.UserData.Plan.Entries)
+        {
+            if (entry.Category == null) { continue; }
+
+            if (!App.UserData.Plan.Categories.Contains(entry.Category))
+            {
+                entry.Category = null;
+            }
+        }
+
+        _entries?.UpdateState();
+    }
+}

@@ -1,0 +1,26 @@
+.navbar-brand {
+    display: inline-block;
+    font-size: 1.1rem;
+    background-color: rgb(25, 82, 130);
+}
+
+.oi {
+    width: 1.5rem;
+    font-size: 1.1rem;
+    vertical-align: text-top;
+    top: -2px;
+}
+
+.nav-item ::deep .nav-link {
+    border-top: solid 0.3rem transparent;
+    padding: 0.7rem 1rem 1rem 1rem !important;
+    transition: border-color 0.245s ease-in;
+}
+
+.nav-item ::deep .nav-link.active {
+    border-top: solid 0.3rem rgb(25, 82, 130);
+}
+
+.nav-item ::deep .nav-link:hover {
+    border-top: solid 0.3rem rgb(173, 181, 189);
+}

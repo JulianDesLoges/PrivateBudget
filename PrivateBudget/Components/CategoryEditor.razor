@@ -1,0 +1,99 @@
+﻿@using PrivateBudget.Client.Models;
+@using System.Drawing;
+@using PrivateBudget.Client.Utils;
+
+<Modal @ref="_modal">
+    <Title>Category</Title>
+    <Body>
+        <form @onsubmit=Save>
+
+            <div class="mb-3">
+                <label for="color" class="form-label">Color</label>
+                <input type="color" class="form-control" id="color" @bind="_colorValue" />
+            </div>
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" placeholder="No name" @bind="_currentCategory.Name" />
+            </div>
+
+            <div class="mb-3">
+                <label for="value" class="form-label">Value</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="value" placeholder="No budget" @bind="_currentCategory.MonthlyBudget" />
+                    <span class="input-group-text">€</span>
+                </div>
+            </div>
+
+        </form>
+    </Body>
+    <Footer>
+        <button type="button" class="btn btn-danger" @onclick="Delete">Delete</button>
+        <button type="button" class="btn btn-primary ms-auto" @onclick="Save">Save</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Close">Close</button>
+    </Footer>
+</Modal>
+
+@code {
+    public event Action<Category?>? CategoryCreated;
+    public event Action<Category?>? CategoryModified;
+    public event Action<Category?>? CategoryDeleted;
+
+    private Modal? _modal;
+    private Category _currentCategory = new Category();
+
+    private bool _newCategory = false;
+    private string _colorValue = "#FFF";
+
+
+    public void Open()
+    {
+        _newCategory = true;
+        Open(new Category());
+    }
+
+
+    public void Open(Category category)
+    {
+        _currentCategory = category;
+        _colorValue = category.Color.ToHex();
+
+        _modal.Open();
+        StateHasChanged();
+    }
+
+
+    private void Close()
+    {
+        StateHasChanged();
+        _newCategory = false;
+        _modal.Close();
+    }
+
+
+    private void Save()
+    {
+        _currentCategory.Color = ColorTranslator.FromHtml(_colorValue);
+
+        if (_newCategory)
+        {
+            CategoryCreated?.Invoke(_currentCategory);
+        }
+        else
+        {
+            CategoryModified?.Invoke(_currentCategory);
+        }
+
+        Close();
+    }
+
+
+    private void Delete()
+    {
+        if (!_newCategory)
+        {
+            CategoryDeleted?.Invoke(_currentCategory);
+        }
+        Close();
+    }
+}

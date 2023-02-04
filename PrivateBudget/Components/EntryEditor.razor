@@ -1,0 +1,180 @@
+﻿@using Microsoft.VisualBasic;
+@using PrivateBudget.Client.Models;
+
+
+<Modal @ref="_modal">
+    <Title>Entry</Title>
+    <Body>
+        <div class="btn-group mb-3" role="group">
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked="@(_valueSign == "+")" @onclick="HandleValueTypeToggle">
+            <label class="btn btn-outline-primary" for="btnradio1">Credit</label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off" checked="@(_valueSign == "-")" @onclick="HandleValueTypeToggle">
+            <label class="btn btn-outline-primary" for="btnradio2">Debit</label>
+        </div>
+
+
+        <form @onsubmit=Save>
+            <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" placeholder="New Entry" @bind="_currentEntry.Name" />
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <input type="text" class="form-control" id="description" placeholder="No Description" @bind="_currentEntry.Description" />
+            </div>
+            <div class="mb-3">
+                <label for="value" class="form-label">Value</label>
+                <div class="input-group">
+                    <span class="input-group-text">@_valueSign</span>
+                    <input type="text" class="form-control" id="value" placeholder="0.0" @bind="_valueString" />
+                    <span class="input-group-text">€</span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="date" class="form-label">Date</label>
+                <input type="date" class="form-control" id="date" placeholder="@DateOnly.FromDateTime(DateTime.Now)" @bind="_currentEntry.StartDate" />
+            </div>
+            <div class="mb-3">
+                <label for="category" class="form-label">Category</label>
+                <select class="form-select" aria-label="Default select example" id="category" @bind="_selectedCategoryIndex">
+                    @foreach (var category in _categories)
+                    {
+                        <option value="@_categories.IndexOf(category)">@(category?.Name ?? "No category")</option> 
+                    }
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="interval" class="form-label">Repeat</label>
+                <select class="form-select" aria-label="Default select example" id="interval" @bind="_selectedIntervalIndex">
+                    @foreach (var interval in _intervals)
+                    {
+                        <option value="@_intervals.IndexOf(interval)">@(interval?.ToString() ?? "Non repeating")</option>
+                    }
+                </select>
+            </div>
+        </form>
+    </Body>
+    <Footer>
+        <button type="button" class="btn btn-danger" @onclick="Delete">Delete</button>
+        <button type="button" class="btn btn-primary ms-auto" @onclick="Save">Save</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Close">Close</button>
+    </Footer>
+</Modal>
+
+@code {
+    public event Action<Entry?>? EntryCreated;
+    public event Action<Entry?>? EntryModified;
+    public event Action<Entry?>? EntryDeleted;
+
+    private Modal? _modal;
+    private Entry _currentEntry = new Entry();
+
+    private string _valueSign = "+";
+    private string _valueString = "";
+    private bool _newEntry = false;
+
+    private int _selectedCategoryIndex;
+    private int _selectedIntervalIndex;
+
+    private List<DateInterval?> _intervals;
+    private List<Category?> _categories = new List<Category?>();
+
+
+    public EntryEditor()
+    {
+        _intervals = new List<DateInterval?>() { null };
+
+        foreach (var interval in Enum.GetValues<DateInterval>())
+        {
+            _intervals.Add(interval);
+        }
+    }
+
+
+    private void AquireCategories()
+    {
+        _categories = new List<Category?>() { null };
+
+        foreach (var category in App.UserData.Plan.Categories)
+        {
+            _categories.Add(category);
+        }
+    }
+
+
+    public void Open()
+    {
+        _newEntry = true;
+        Open(new Entry());
+    }
+
+
+    public void Open(Entry entry)
+    {
+        AquireCategories();
+        _currentEntry = entry;
+
+        _valueSign = entry.Value >= 0 ? "+" : "-";
+        _valueString = $"{Math.Abs(entry.Value):0.00}";
+        _selectedCategoryIndex = _categories.IndexOf(_currentEntry.Category);
+        _selectedIntervalIndex = _intervals.IndexOf(_currentEntry.Interval);
+
+        _modal.Open();
+        StateHasChanged();
+    }
+
+
+    private void Close()
+    {
+        StateHasChanged();
+        _newEntry = false;
+        _modal.Close();
+    }
+
+
+    private void UpdateEntry()
+    {
+        decimal.TryParse(_valueSign + _valueString, out decimal value);
+        _currentEntry.Value = value;
+
+        _currentEntry.Category = _categories[_selectedCategoryIndex];
+        _currentEntry.Interval = _intervals[_selectedIntervalIndex];
+    }
+
+
+    private void Save()
+    {
+        UpdateEntry();
+
+        if (_newEntry)
+        {
+            EntryCreated?.Invoke(_currentEntry);
+        }
+        else
+        {
+            EntryModified?.Invoke(_currentEntry);
+        }
+
+        Close();
+    }
+
+
+    private void Delete()
+    {
+        UpdateEntry();
+
+        if (!_newEntry)
+        {
+            EntryDeleted?.Invoke(_currentEntry);
+        }
+        Close();
+    }
+
+
+    private void HandleValueTypeToggle()
+    {
+        _valueSign = _valueSign == "+" ? "-" : "+";
+        StateHasChanged();
+    }
+}

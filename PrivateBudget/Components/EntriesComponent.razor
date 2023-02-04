@@ -1,0 +1,116 @@
+﻿@using PrivateBudget.Client.Models;
+@using PrivateBudget.Client.Utils;
+
+<EntryEditor @ref="_entryEditor"></EntryEditor>
+
+<div class="card">
+    <div class="card-header hstack">
+        <div>Entries</div>
+        <div class="btn btn-outline-primary ms-auto" @onclick="() => _entryEditor?.Open()">+</div>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Name</th>
+                    <th class="value" scope="col">Value</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Interval</th>
+                    <th scope="col">Description</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            
+            <tbody>
+                @foreach (var entry in Entries)
+                {
+                    <tr>
+                        <td>@FormatDate(entry)</td>
+                        <td>@entry.Name</td>
+                        <td class="value @GetValueClass(entry.Value)">@FormatValue(entry.Value)</td>
+                        <td>
+                            <div class="category-color" style="background-color:@entry.Category?.Color.ToHex()" />@(entry.Category?.Name ?? "No category")
+                        </td>
+                        <td>@entry.Interval</td>
+                        <td>@entry.Description</td>
+                        <td>
+                            <span class="oi oi-pencil" @onclick="() => _entryEditor?.Open(entry)" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (Entries.Count <= 0)
+        {
+            <div style="text-align:center;">No entries</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<Entry> Entries { get; set; } = new List<Entry>();
+
+    private EntryEditor? _entryEditor;
+
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (_entryEditor == null)
+            {
+                throw new NullReferenceException("_entryEditor is null.");
+            }
+
+            _entryEditor.EntryCreated += EntryCreated;
+            _entryEditor.EntryModified += EntryModified;
+            _entryEditor.EntryDeleted += EntryDeleted;
+        }
+    }
+
+
+    private string GetValueClass(decimal value)
+    {
+        if (value > 0) { return "credit"; }
+        else if (value < 0) { return "debit"; }
+        else { return string.Empty; }
+    }
+
+
+    private string FormatValue(decimal value) => $"{(value >= 0 ? "+" : "")}{value:0.00} €";
+
+
+    private string FormatDate(Entry entry) => $"{entry.StartDate}{(entry.EndDate == null ? string.Empty : $" - {entry.EndDate}")}";
+
+
+    private void EntryCreated(Entry? entry)
+    {
+        if (entry != null)
+        {
+            Entries.Add(entry);
+            StateHasChanged();
+        }
+    }
+
+
+    private void EntryModified(Entry? entry)
+    {
+        StateHasChanged();
+    }
+
+
+    private void EntryDeleted(Entry? entry)
+    {
+        if (entry != null)
+        {
+            Entries.Remove(entry);
+            StateHasChanged();
+        }
+    }
+
+
+    public void UpdateState() => StateHasChanged();
+}

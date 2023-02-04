@@ -1,0 +1,101 @@
+﻿@using PrivateBudget.Client.Models;
+@using PrivateBudget.Client.Utils;
+
+<CategoryEditor @ref="_categoryEditor" />
+
+<div class="card">
+    <div class="card-header hstack">
+        <div>Categories</div>
+        <div class="btn btn-outline-primary ms-auto" @onclick="() => _categoryEditor?.Open()">+</div>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Category</th>
+                    <th scope="col">Monthly budget</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+
+            @foreach (var category in Categories)
+            {
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="category-color" style="background-color:@category.Color.ToHex()" />@(category.Name)
+                        </td>
+                        <td>
+                            <div>@(category.MonthlyBudget?.ToString("0.00") ?? "no budget")</div>
+                        </td>
+                        <td>
+                            <span class="oi oi-pencil" @onclick="() => _categoryEditor?.Open(category)" />
+                        </td>
+                    </tr>
+                </tbody>
+            }
+        </table>
+
+        @if (Categories.Count <= 0)
+        {
+            <div style="text-align:center">No categories</div>
+        }
+    </div>
+</div>
+
+
+
+
+@code {
+    public event Action? CategoriesChanged;
+
+    [Parameter]
+    public List<Category> Categories { get; set; } = new List<Category>();
+
+    private CategoryEditor? _categoryEditor;
+
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (_categoryEditor == null)
+            {
+                throw new NullReferenceException("_categoryEditor is null.");
+            }
+
+            _categoryEditor.CategoryCreated += CategoryCreated;
+            _categoryEditor.CategoryModified += CategoryModified;
+            _categoryEditor.CategoryDeleted += CategoryDeleted;
+        }
+    }
+
+
+    private void CategoryCreated(Category? category)
+    {
+        if (category != null)
+        {
+            Categories.Add(category);
+            StateHasChanged();
+            CategoriesChanged?.Invoke();
+        }
+    }
+
+
+    private void CategoryModified(Category? category)
+    {
+        StateHasChanged();
+        CategoriesChanged?.Invoke();
+    }
+
+
+    private void CategoryDeleted(Category? category)
+    {
+        if (category != null)
+        {
+            Categories.Remove(category);
+            StateHasChanged();
+            CategoriesChanged?.Invoke();
+        }
+    }
+}

@@ -1,0 +1,54 @@
+﻿<div class="d-flex bg-body-tertiary position-relative">
+    <div class="navbar-brand p-3">
+        PrivateBudget
+    </div>
+
+    <nav class="d-flex">
+
+        <div class="nav-item">
+            <NavLink class="nav-link p-3" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+
+        <div class="nav-item">
+            <NavLink class="nav-link p-3" href="entries">
+                <span class="oi oi-list" aria-hidden="true"></span> Entries
+            </NavLink>
+        </div>
+
+        <div class="nav-item">
+            <NavLink class="nav-link p-3" href="budgets">
+                <span class="oi oi-euro" aria-hidden="true"></span> Budgets
+            </NavLink>
+        </div>
+
+        <div class="nav-item">
+            <NavLink class="nav-link p-3" href="charts">
+                <span class="oi oi-signal" aria-hidden="true"></span> Charts
+            </NavLink>
+        </div>
+
+        <div class="nav-item">
+            <NavLink class="nav-link p-3" href="categories">
+                <span class="oi oi-grid-two-up" aria-hidden="true"></span> Categories
+            </NavLink>
+        </div>
+    </nav>
+
+    <div>
+        <span class="oi oi-cog m-3 position-absolute end-0" aria-hidden="true"></span>
+    </div>
+</div>
+
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}
