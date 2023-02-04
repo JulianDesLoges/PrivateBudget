@@ -1,5 +1,4 @@
 ﻿@using PrivateBudget.Client.Models;
-@using PrivateBudget.Client.Utils;
 
 <EntryEditor @ref="_entryEditor"></EntryEditor>
 
@@ -30,7 +29,7 @@
                         <td>@entry.Name</td>
                         <td class="value @GetValueClass(entry.Value)">@FormatValue(entry.Value)</td>
                         <td>
-                            <div class="category-color" style="background-color:@entry.Category?.Color.ToHex()" />@(entry.Category?.Name ?? "No category")
+                            <div class="category-color" style="background-color:@(entry.Category?.Color ?? "transparent")" />@(entry.Category?.Name ?? "No category")
                         </td>
                         <td>@entry.Interval</td>
                         <td>@entry.Description</td>

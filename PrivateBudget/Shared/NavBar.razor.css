@@ -24,3 +24,8 @@
 .nav-item ::deep .nav-link:hover {
     border-top: solid 0.3rem rgb(173, 181, 189);
 }
+
+.nav-buttons div:hover {
+    color: var(--bs-light-text);
+    cursor: pointer;
+}

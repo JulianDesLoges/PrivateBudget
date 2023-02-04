@@ -15,51 +15,51 @@
 
 @code
 {
-    public static UserData UserData { get; private set; } = new UserData();
+    public static UserData UserData { get; set; } = new UserData();
 
 
 
     protected override void OnInitialized()
     {
-        UserData.Plan = new Plan()
-        {
-            Name = "Test Plan",
-            Categories =
-            {
-                new Category()
-                {
-                    Name = "Einkommen",
-                    Color = Color.Lime
-                },
-                new Category()
-                {
-                    Name = "Wohnen",
-                    Color = Color.Wheat,
-                    MonthlyBudget = 765.00m
-                }
-            }
-        };
+        //UserData.Plan = new Plan()
+        //{
+        //    Name = "Test Plan",
+        //    Categories =
+        //    {
+        //        new Category()
+        //        {
+        //            Name = "Einkommen",
+        //            Color = "#2b40a8"
+        //        },
+        //        new Category()
+        //        {
+        //            Name = "Wohnen",
+        //            Color = "#27ea2e",
+        //            MonthlyBudget = 765.00m
+        //        }
+        //    }
+        //};
 
-        UserData.Plan.Entries = new List<Entry>
-        {
-            new Entry()
-            {
-                Name = "Gehalt",
-                Value = 1825,
-                StartDate = new DateOnly(2023, 2, 28),
-                Interval = Microsoft.VisualBasic.DateInterval.Month,
-                Category = UserData.Plan.Categories[0],
-                Description = ""
-            },
-            new Entry()
-            {
-                Name = "Miete",
-                Value = -765,
-                StartDate = new DateOnly(2023, 2, 15),
-                Interval = Microsoft.VisualBasic.DateInterval.Month,
-                Category = UserData.Plan.Categories[1],
-                Description = "Kaltmiete + Nebenkostenpauschale"
-            }
-        };
+        //UserData.Plan.Entries = new List<Entry>
+        //{
+        //    new Entry()
+        //    {
+        //        Name = "Gehalt",
+        //        Value = 1825,
+        //        StartDate = new DateOnly(2023, 2, 28),
+        //        Interval = Microsoft.VisualBasic.DateInterval.Month,
+        //        Category = UserData.Plan.Categories[0],
+        //        Description = ""
+        //    },
+        //    new Entry()
+        //    {
+        //        Name = "Miete",
+        //        Value = -765,
+        //        StartDate = new DateOnly(2023, 2, 15),
+        //        Interval = Microsoft.VisualBasic.DateInterval.Month,
+        //        Category = UserData.Plan.Categories[1],
+        //        Description = "Kaltmiete + Nebenkostenpauschale"
+        //    }
+        //};
     }
 }

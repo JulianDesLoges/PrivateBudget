@@ -1,6 +1,5 @@
 ﻿@using PrivateBudget.Client.Models;
 @using System.Drawing;
-@using PrivateBudget.Client.Utils;
 
 <Modal @ref="_modal">
     <Title>Category</Title>
@@ -9,7 +8,7 @@
 
             <div class="mb-3">
                 <label for="color" class="form-label">Color</label>
-                <input type="color" class="form-control" id="color" @bind="_colorValue" />
+                <input type="color" class="form-control" id="color" @bind="_currentCategory.Color" />
             </div>
 
             <div class="mb-3">
@@ -43,7 +42,6 @@
     private Category _currentCategory = new Category();
 
     private bool _newCategory = false;
-    private string _colorValue = "#FFF";
 
 
     public void Open()
@@ -56,7 +54,6 @@
     public void Open(Category category)
     {
         _currentCategory = category;
-        _colorValue = category.Color.ToHex();
 
         _modal.Open();
         StateHasChanged();
@@ -73,8 +70,6 @@
 
     private void Save()
     {
-        _currentCategory.Color = ColorTranslator.FromHtml(_colorValue);
-
         if (_newCategory)
         {
             CategoryCreated?.Invoke(_currentCategory);

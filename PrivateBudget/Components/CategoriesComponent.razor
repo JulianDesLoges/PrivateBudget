@@ -1,5 +1,4 @@
 ﻿@using PrivateBudget.Client.Models;
-@using PrivateBudget.Client.Utils;
 
 <CategoryEditor @ref="_categoryEditor" />
 
@@ -23,7 +22,7 @@
                 <tbody>
                     <tr>
                         <td>
-                            <div class="category-color" style="background-color:@category.Color.ToHex()" />@(category.Name)
+                            <div class="category-color" style="background-color:@category.Color" />@(category.Name)
                         </td>
                         <td>
                             <div>@(category.MonthlyBudget?.ToString("0.00") ?? "no budget")</div>
@@ -98,4 +97,7 @@
             CategoriesChanged?.Invoke();
         }
     }
+
+
+    public void UpdateState() => StateHasChanged();
 }

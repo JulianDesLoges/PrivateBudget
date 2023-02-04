@@ -1,11 +1,36 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
 
 <div class="page">
     <main>
-        <NavBar />
+        <NavBar @ref="_navBar" />
 
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
+
+@code {
+    private NavBar? _navBar;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (_navBar == null)
+            {
+                throw new NullReferenceException("_navBar is null.");
+            }
+
+            _navBar.UserDataChanged += () =>
+            {
+                // HACK isn't there a better solution?
+                string currentPath = Navigation.ToBaseRelativePath(Navigation.Uri);
+                Navigation.NavigateTo("");
+                Navigation.NavigateTo(currentPath);
+            };
+
+        }
+    }
+}

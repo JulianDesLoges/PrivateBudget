@@ -1,4 +1,9 @@
-﻿<div class="d-flex bg-body-tertiary position-relative">
+﻿@using System.Text.Json;
+@using PrivateBudget.Client.Models;
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<div class="d-flex bg-body-tertiary position-relative">
     <div class="navbar-brand p-3">
         PrivateBudget
     </div>
@@ -36,19 +41,73 @@
         </div>
     </nav>
 
-    <div>
-        <span class="oi oi-cog m-3 position-absolute end-0" aria-hidden="true"></span>
+    <div class="nav-buttons ms-auto d-flex">
+        <div class="p-3" aria-label="Export" @onclick="DownloadFileFromStream"><span class="oi oi-data-transfer-download" /></div>
+        <div class="p-3" aria-label="Import" onclick="document.getElementById('import').click()"><span class="oi oi-data-transfer-upload" /></div>
+        <InputFile id="import" OnChange="Import" hidden></InputFile>
+        <div class="p-3" aria-label="Settings" @onclick="NavigateToSettings"><span class="oi oi-cog" /></div>
     </div>
 </div>
 
 
+
 @code {
-    private bool collapseNavMenu = true;
+    public event Action? UserDataChanged;
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
-    private void ToggleNavMenu()
+    private async void Import(InputFileChangeEventArgs args)
     {
-        collapseNavMenu = !collapseNavMenu;
+        using var stream = new StreamReader(args.File.OpenReadStream());
+        string jsonString = await stream.ReadToEndAsync();
+
+        var userData = JsonSerializer.Deserialize<UserData>(jsonString);
+        if (userData != null)
+        {
+            App.UserData = userData;
+
+            // Update the category references of entries
+            foreach (var entry in App.UserData.Plan.Entries)
+            {
+                foreach (var category in App.UserData.Plan.Categories)
+                {
+                    if (entry.Category?.Equals(category) ?? true)
+                    {
+                        entry.Category = category;
+                        break;
+                    }
+                }
+            }
+
+            UserDataChanged?.Invoke();
+        }
+        
     }
+
+
+    private Stream GetUserDataFileStream(MemoryStream trargetStream)
+    {
+        string userData = JsonSerializer.Serialize(App.UserData, new JsonSerializerOptions() { WriteIndented = true });
+        var writer = new StreamWriter(trargetStream);
+
+        writer.Write(userData);
+        writer.Flush();
+        trargetStream.Position = 0;
+
+        return trargetStream;
+    }
+
+
+    private async Task DownloadFileFromStream()
+    {
+        using var stream = new MemoryStream();
+        var fileStream = GetUserDataFileStream(stream);
+        var fileName = "user-data.json";
+
+        using var streamRef = new DotNetStreamReference(stream: fileStream);
+
+        await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+    }
+
+
+    private void NavigateToSettings() => Navigation.NavigateTo("settings");
 }
