@@ -13,7 +13,7 @@
                 <tr>
                     <th scope="col">Date</th>
                     <th scope="col">Name</th>
-                    <th class="value" scope="col">Value</th>
+                    <th scope="col">Value</th>
                     <th scope="col">Category</th>
                     <th scope="col">Interval</th>
                     <th scope="col">Description</th>
@@ -22,7 +22,7 @@
             </thead>
             
             <tbody>
-                @foreach (var entry in Entries)
+                @foreach (var entry in Entries.OrderBy(x => x.StartDate))
                 {
                     <tr>
                         <td>@FormatDate(entry)</td>
