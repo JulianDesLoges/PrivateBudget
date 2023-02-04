@@ -26,8 +26,8 @@
             <div class="mb-3">
                 <label for="value" class="form-label">Value</label>
                 <div class="input-group">
-                    <span class="input-group-text">@_valueSign</span>
-                    <input type="text" class="form-control" id="value" placeholder="0.0" @bind="_valueString" />
+                    <span class="input-group-text value-sign">@_valueSign</span>
+                    <input type="text" class="form-control" id="value" placeholder="0,00" @bind="_valueString" />
                     <span class="input-group-text">€</span>
                 </div>
             </div>
@@ -70,7 +70,7 @@
     private Modal? _modal;
     private Entry _currentEntry = new Entry();
 
-    private string _valueSign = "+";
+    private string _valueSign = "-";
     private string _valueString = "";
     private bool _newEntry = false;
 
@@ -115,8 +115,18 @@
         AquireCategories();
         _currentEntry = entry;
 
-        _valueSign = entry.Value >= 0 ? "+" : "-";
-        _valueString = $"{Math.Abs(entry.Value):0.00}";
+
+
+        if (_newEntry)
+        {
+            _valueSign = "-";
+            _valueString = string.Empty;
+        }
+        else
+        {
+            _valueSign = entry.Value >= 0 ? "+" : "-";
+            _valueString = $"{Math.Abs(entry.Value):0.00}";
+        }
         _selectedCategoryIndex = _categories.IndexOf(_currentEntry.Category);
         _selectedIntervalIndex = _intervals.IndexOf(_currentEntry.Interval);
 

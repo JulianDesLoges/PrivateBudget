@@ -7,8 +7,11 @@
         <form @onsubmit=Save>
 
             <div class="mb-3">
-                <label for="color" class="form-label">Color</label>
-                <input type="color" class="form-control" id="color" @bind="_currentCategory.Color" />
+                <label for="color-text" class="form-label">Color</label>
+                <div class="input-group">
+                    <input style="height:40px;max-width:55px;" type="color" class="form-control" id="color" @bind="_currentCategory.Color" />
+                    <input type="text" class="form-control" id="color-text" @bind="_currentCategory.Color" />
+                </div>
             </div>
 
             <div class="mb-3">

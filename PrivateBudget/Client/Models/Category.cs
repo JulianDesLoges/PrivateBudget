@@ -7,7 +7,7 @@ namespace PrivateBudget.Client.Models
     {
         public string Name { get; set; } = string.Empty;
 
-        public string Color { get; set; } = "#FFF";
+        public string Color { get; set; } = "#ffffff";
 
         public decimal? MonthlyBudget { get; set; } = null;
 

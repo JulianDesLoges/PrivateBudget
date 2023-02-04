@@ -24,9 +24,7 @@
                         <td>
                             <div class="category-color" style="background-color:@category.Color" />@(category.Name)
                         </td>
-                        <td>
-                            <div>@(category.MonthlyBudget?.ToString("0.00") ?? "no budget")</div>
-                        </td>
+                        <td class="value">@(category.MonthlyBudget?.ToString("0.00 €") ?? "no budget")</td>
                         <td>
                             <span class="oi oi-pencil" @onclick="() => _categoryEditor?.Open(category)" />
                         </td>
