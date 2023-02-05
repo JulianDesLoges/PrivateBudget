@@ -113,12 +113,3 @@ a, .btn-link {
 .credit {
     color: var(--bs-success-text);
 }
-
-
-.category-color {
-    display: inline-block;
-    height: 14px;
-    width: 14px;
-    margin-right: 0.5rem;
-    border-radius: 50%;
-}

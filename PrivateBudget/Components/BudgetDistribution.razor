@@ -1,0 +1,47 @@
+﻿@using System.Text.Json;
+@inject IJSRuntime JS
+
+<div class="card">
+    <div class="card-header hstack">
+        <div>Budget Distribution</div>
+    </div>
+    <div class="card-body">
+        <canvas width="500" height="500" id="budget-donut"></canvas>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        decimal totalIncome = 1;
+        var dict = new Dictionary<string, decimal>();
+
+        foreach (var category in App.UserData.Plan.Categories)
+        {
+            if (category.Name == "Einkommen")
+            {
+                totalIncome = category.MonthlyBudget ?? 1;
+                break;
+            }
+        }
+
+
+        foreach (var category in App.UserData.Plan.Categories)
+        {
+            if (category.Name != "Einkommen")
+            {
+                dict.Add(category.Color, ((category.MonthlyBudget ?? 0) / totalIncome));
+            }
+        }
+
+        dict = dict.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
+
+
+        await JS.InvokeVoidAsync(
+            "createDonutChart",
+            "#budget-donut",
+            0.3,
+            JsonSerializer.Serialize(dict)
+    );
+    }
+}

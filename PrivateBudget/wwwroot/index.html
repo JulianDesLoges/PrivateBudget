@@ -45,6 +45,14 @@
             URL.revokeObjectURL(url);
         }
     </script>
+
+    <script src="script/chart.js"></script>
+
+    <script>
+        window.createDonutChart = (canvasSelector, width, dataString) => {
+            const chart = new DonutChart(canvasSelector, width, JSON.parse(dataString));
+        }
+    </script>
 </body>
 
 </html>

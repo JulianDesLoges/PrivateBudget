@@ -28,9 +28,7 @@
                         <td>@FormatDate(entry)</td>
                         <td>@entry.Name</td>
                         <td class="value @GetValueClass(entry.Value)">@FormatValue(entry.Value)</td>
-                        <td>
-                            <div class="category-color" style="background-color:@(entry.Category?.Color ?? "transparent")" />@(entry.Category?.Name ?? "No category")
-                        </td>
+                        <td><CategoryComponent Category="@entry.Category" /></td>
                         <td>@entry.Interval</td>
                         <td>@entry.Description</td>
                         <td>

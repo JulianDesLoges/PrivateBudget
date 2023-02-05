@@ -1,0 +1,7 @@
+﻿.category-color {
+    display: inline-block;
+    height: 14px;
+    width: 14px;
+    margin-right: 0.5rem;
+    border-radius: 50%;
+}
