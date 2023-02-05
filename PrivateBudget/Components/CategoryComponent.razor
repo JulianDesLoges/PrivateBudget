@@ -1,5 +1,8 @@
 ﻿@using PrivateBudget.Client.Models;
-<div class="category-color" style="background-color:@(Category?.Color ?? "transparent")" />@(Category?.Name ?? "No category")
+<div class="d-flex align-items-center">
+    <div class="category-color" style="background-color:@(Category?.Color ?? "transparent")" />
+    <div class="me-5">@(Category?.Name ?? "No category")</div>
+</div>
 
 @code {
     [Parameter]

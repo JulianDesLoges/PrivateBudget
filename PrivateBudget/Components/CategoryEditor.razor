@@ -42,7 +42,7 @@
     public event Action<Category?>? CategoryDeleted;
 
     private Modal? _modal;
-    private Category _currentCategory = new Category();
+    private Category? _currentCategory = new Category();
 
     private bool _newCategory = false;
 
@@ -54,11 +54,11 @@
     }
 
 
-    public void Open(Category category)
+    public void Open(Category? category)
     {
         _currentCategory = category;
 
-        _modal.Open();
+        _modal?.Open();
         StateHasChanged();
     }
 
@@ -67,7 +67,7 @@
     {
         StateHasChanged();
         _newCategory = false;
-        _modal.Close();
+        _modal?.Close();
     }
 
 

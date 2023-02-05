@@ -66,6 +66,9 @@
                 }
             }
 
+            // Update income category reference
+            App.UserData.Plan.Categories.Find(x => x?.Equals(App.UserData.Plan.IncomeCategory) ?? true);
+
             UserDataChanged?.Invoke();
         }
         

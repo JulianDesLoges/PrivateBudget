@@ -8,6 +8,18 @@
         <div class="btn btn-outline-primary ms-auto" @onclick="() => _categoryEditor?.Open()">+</div>
     </div>
     <div class="card-body">
+        <div class="form-floating mb-3">
+            <select class="form-select" aria-label="Default select example" id="income-category" @bind="SelectedIncomeCategoryIndex">
+                @{int i = 0;}
+                @foreach (var category in Plan.Categories)
+                {
+                    <option value="@i">@(category?.Name ?? "no category")</option>
+                    i++;
+                }
+            </select>
+            <label for="income-category">Income category</label>
+        </div>
+
         <table class="table">
             <thead>
                 <tr>
@@ -17,12 +29,12 @@
                 </tr>
             </thead>
 
-            @foreach (var category in Categories)
+            @foreach (var category in Plan.Categories)
             {
                 <tbody>
                     <tr>
                         <td><CategoryComponent Category="@category" /></td>
-                        <td class="value">@(category.MonthlyBudget?.ToString("0.00 €") ?? "no budget")</td>
+                        <td class="value">@(category?.MonthlyBudget?.ToString("0.00 €") ?? "no budget")</td>
                         <td>
                             <span class="oi oi-pencil" @onclick="() => _categoryEditor?.Open(category)" />
                         </td>
@@ -31,7 +43,7 @@
             }
         </table>
 
-        @if (Categories.Count <= 0)
+        @if (Plan.Categories.Count <= 0)
         {
             <div style="text-align:center">No categories</div>
         }
@@ -45,9 +57,16 @@
     public event Action? CategoriesChanged;
 
     [Parameter]
-    public List<Category> Categories { get; set; } = new List<Category>();
+    public Plan Plan { get; set; } = new Plan();
+
 
     private CategoryEditor? _categoryEditor;
+
+    private int SelectedIncomeCategoryIndex
+    {
+        get => Plan.Categories.IndexOf(Plan.IncomeCategory);
+        set => Plan.IncomeCategory = Plan.Categories[value];
+    }
 
 
     protected override void OnAfterRender(bool firstRender)
@@ -63,6 +82,8 @@
             _categoryEditor.CategoryModified += CategoryModified;
             _categoryEditor.CategoryDeleted += CategoryDeleted;
         }
+
+        SelectedIncomeCategoryIndex = Plan.Categories.IndexOf(Plan.IncomeCategory);
     }
 
 
@@ -70,7 +91,7 @@
     {
         if (category != null)
         {
-            Categories.Add(category);
+            Plan.Categories.Add(category);
             StateHasChanged();
             CategoriesChanged?.Invoke();
         }
@@ -88,7 +109,7 @@
     {
         if (category != null)
         {
-            Categories.Remove(category);
+            Plan.Categories.Remove(category);
             StateHasChanged();
             CategoriesChanged?.Invoke();
         }
@@ -96,4 +117,8 @@
 
 
     public void UpdateState() => StateHasChanged();
+
+
+
+    private void IncomeCategoryChanged() => Plan.IncomeCategory = Plan.Categories[SelectedIncomeCategoryIndex];
 }

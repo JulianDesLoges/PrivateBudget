@@ -6,6 +6,8 @@
 
         public List<Entry> Entries { get; set; } = new List<Entry>();
 
-        public List<Category> Categories { get; set; } = new List<Category>();
+        public List<Category?> Categories { get; set; } = new List<Category?>() { null };
+
+        public Category? IncomeCategory { get; set; }
     }
 }
