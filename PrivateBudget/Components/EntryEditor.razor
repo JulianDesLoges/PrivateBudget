@@ -5,12 +5,12 @@
 <Modal @ref="_modal">
     <Title>Entry</Title>
     <Body>
-        <div class="btn-group mb-3" role="group">
-            <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked="@(_valueSign == "+")" @onclick="HandleValueTypeToggle">
-            <label class="btn btn-outline-primary" for="btnradio1">Credit</label>
-
+        <div class="d-flex mb-3" role="group">
             <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off" checked="@(_valueSign == "-")" @onclick="HandleValueTypeToggle">
-            <label class="btn btn-outline-primary" for="btnradio2">Debit</label>
+            <label class="btn btn-outline-danger" for="btnradio2">Debit</label>
+
+            <input type="radio" class="btn-check ms-auto" name="btnradio" id="btnradio1" autocomplete="off" checked="@(_valueSign == "+")" @onclick="HandleValueTypeToggle">
+            <label class="btn btn-outline-success ms-auto" for="btnradio1">Credit</label>
         </div>
 
 
