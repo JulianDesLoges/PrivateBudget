@@ -1,0 +1,76 @@
+﻿<div class="input-group">
+    <div class="form-floating">
+        <select class="form-select" aria-label="Month Select" id="month-select" @bind="Month" disabled="@Disabled">
+                @foreach (var month in MONTHS)
+                {
+                    <option value="@month.Key">@month.Value</option>
+                }
+        </select>
+        <label for="month-selct">Month</label>
+    </div>
+    <div class="form-floating">
+        <input class="form-control" type="text" id="year" placeholder="Year" @bind="Year" disabled="@Disabled"/>
+        <label for="year">Year</label>
+    </div>
+</div>
+
+@code {
+    public event Action? DateChanged;
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    public DateOnly Value { get; set; } = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
+
+
+    public IReadOnlyDictionary<int, string> MONTHS = new Dictionary<int, string>()
+    {
+        { 1, "January" },
+        { 2, "February" },
+        { 3, "March" },
+        { 4, "April" },
+        { 5, "May" },
+        { 6, "June" },
+        { 7, "July" },
+        { 8, "August" },
+        { 9, "Septemper" },
+        { 10, "October" },
+        { 11, "November" },
+        { 12, "December" }
+    };
+
+
+    private string Year {
+        get => Value.Year.ToString();
+        set
+        {
+            if (int.TryParse(value, out int iValue))
+            {
+                if (iValue > 200 && iValue < 9999)
+                {
+                    Value = new DateOnly(int.Parse(value), Value.Month, 1);
+                    DateChanged?.Invoke();
+                }
+            }
+        }
+    }
+
+    private int Month
+    {
+        get => Value.Month;
+        set
+        {
+            if (value >= 1 && value <= 12)
+            {
+                Value = new DateOnly(Value.Year, value, 1);
+                DateChanged?.Invoke();
+            }
+        }
+    }
+
+
+    protected override void OnInitialized()
+    {
+        Value = new DateOnly(Value.Year, Value.Month, 1);
+    }
+}

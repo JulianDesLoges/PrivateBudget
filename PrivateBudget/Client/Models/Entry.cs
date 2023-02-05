@@ -16,6 +16,6 @@ namespace PrivateBudget.Client.Models
 
         public DateOnly? EndDate { get; set; } = null;
 
-        public DateInterval? Interval { get; set; } = null;
+        public BookingInterval Interval { get; set; } = BookingInterval.SingleTime;
     }
 }

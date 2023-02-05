@@ -1,0 +1,168 @@
+﻿@using PrivateBudget.Client.Models;
+
+<div class="card">
+    <div class="card-header hstack">
+        <div>Monthly bookings</div>
+    </div>
+    <div class="card-body">
+        <div class="container mb-5">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <MonthSelect Disabled="CurrentMonth" @ref="_monthSelect" />
+                </div>
+
+                <div class="form-check col-auto">
+                    <input class="form-check-input" type="checkbox" id="current-month" @bind="CurrentMonth">
+                    <label class="form-check-label" for="current-month">Current month</label>
+                </div>
+
+                <div class="form-check col-auto">
+                    <input class="form-check-input" type="checkbox" id="virtual-booking">
+                    <label class="form-check-label" for="virtual-booking">Virtual booking</label>
+                </div>
+
+                <div class="form-check col-auto">
+                    <input class="form-check-input" type="checkbox" id="ignore-day" disabled="@(!CurrentMonth)">
+                    <label class="form-check-label" for="ignore-day">Ignore day</label>
+                </div>
+            </div>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Value</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Description</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var booking in _bookings.OrderBy(x => x.Date))
+                {
+                    <tr>
+                        <td>@booking.Date</td>
+                        <td>@booking.Name</td>
+                        <td><ColoredCurrencyComponent CurrencySymbol="'€'" Value="@booking.Value" /></td>
+                        <td><CategoryComponent Category="@booking.Category" /></td>
+                        <td>@booking.Description</td>
+                    </tr>
+                }
+
+                <tr style="border:transparent;">
+                    <td><strong>Net</strong></td>
+                    <td></td>
+                    <td><ColoredCurrencyComponent CurrencySymbol="'€'" Value="@_net"></ColoredCurrencyComponent></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+
+                <tr style="border:transparent;">
+                    <td><strong>Total</strong></td>
+                    <td></td>
+                    <td><ColoredCurrencyComponent CurrencySymbol="'€'" Value="@_total"></ColoredCurrencyComponent></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public Plan? Plan { get; set; }
+
+    private MonthSelect? _monthSelect;
+
+    private bool CurrentMonth
+    {
+        get => App.UserData.CurrentMonth;
+        set
+        {
+            App.UserData.CurrentMonth = value;
+            _monthSelect.Value = DateOnly.FromDateTime(DateTime.Now);
+            GenerateBookings();
+        }
+    }
+
+
+    private List<Booking> _bookings = new List<Booking>();
+    private decimal _net;
+    private decimal _total;
+
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (_monthSelect == null)
+            {
+                throw new NullReferenceException("_monthSelect is null.");
+            }
+
+            GenerateBookings();
+
+            _monthSelect.DateChanged += DateChanged;
+        }
+    }
+
+
+    private void DateChanged() => GenerateBookings();
+
+
+    private void GenerateBookings()
+    {
+        if (_monthSelect == null)
+        {
+            throw new NullReferenceException("_monthSelect is null.");
+        }
+
+        if (Plan == null)
+        {
+            throw new NullReferenceException("Plan is null.");
+        }
+
+
+        DateOnly start = _monthSelect.Value;
+        DateOnly end = _monthSelect.Value.AddMonths(1);
+
+        _bookings = new List<Booking>();
+
+        foreach (var entry in Plan.Entries)
+        {
+            switch (entry.Interval)
+            {
+                case BookingInterval.SingleTime:
+                    if (entry.StartDate >= start && entry.StartDate <= end)
+                    {
+                        _bookings.Add(new Booking(entry, start.Month, start.Year));
+                    }
+                    break;
+                case BookingInterval.Monthly:
+                    if (entry.StartDate <= start && (entry.EndDate ?? end) >= end)
+                    {
+                        _bookings.Add(new Booking(entry, start.Month, start.Year));
+                    }
+                    break;
+                case BookingInterval.Yearly:
+                    if (entry.StartDate <= start && (entry.EndDate ?? end) >= end && entry.StartDate.Month == end.Month)
+                    {
+                        _bookings.Add(new Booking(entry, start.Month, start.Year));
+                    }
+                    break;
+            }
+        }
+
+        _net = 0;
+        foreach (var booking in _bookings)
+        {
+            _net += booking.Value;
+        }
+        _total = _net;
+
+        StateHasChanged();
+    }
+}

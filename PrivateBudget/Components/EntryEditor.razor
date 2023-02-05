@@ -15,43 +15,51 @@
 
 
         <form @onsubmit=Save>
-            <div class="mb-3">
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="name" placeholder="Name" @bind="_currentEntry.Name" />
                 <label for="name" class="form-label">Name</label>
-                <input type="text" class="form-control" id="name" placeholder="New Entry" @bind="_currentEntry.Name" />
             </div>
-            <div class="mb-3">
+
+            <div class="form-floating mb-3">
+                <textarea class="form-control" id="description" placeholder="Description" @bind="_currentEntry.Description" />
                 <label for="description" class="form-label">Description</label>
-                <input type="text" class="form-control" id="description" placeholder="No Description" @bind="_currentEntry.Description" />
             </div>
-            <div class="mb-3">
-                <label for="value" class="form-label">Value</label>
-                <div class="input-group">
-                    <span class="input-group-text value-sign">@_valueSign</span>
-                    <input type="text" class="form-control" id="value" placeholder="0,00" @bind="_valueString" />
-                    <span class="input-group-text">€</span>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text value-sign">@_valueSign</span>
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="value" placeholder="Amount" @bind="_valueString" />
+                    <label for="value" class="form-label">Amount</label>
                 </div>
+                <span class="input-group-text">€</span>
             </div>
-            <div class="mb-3">
+
+            <div class="form-floating mb-3">
+                <input type="date" class="form-control" id="date" placeholder="Date" @bind="_currentEntry.StartDate" />
                 <label for="date" class="form-label">Date</label>
-                <input type="date" class="form-control" id="date" placeholder="@DateOnly.FromDateTime(DateTime.Now)" @bind="_currentEntry.StartDate" />
             </div>
-            <div class="mb-3">
-                <label for="category" class="form-label">Category</label>
+
+            <div class="form-floating mb-3">
                 <select class="form-select" aria-label="Default select example" id="category" @bind="_selectedCategoryIndex">
-                    @foreach (var category in _categories)
+                    @{int i = 0;}
+                    @foreach (var category in App.UserData.Plan.Categories)
                     {
-                        <option value="@_categories.IndexOf(category)">@(category?.Name ?? "No category")</option> 
+                        <option value="@(i++)">@(category?.Name ?? "No category")</option> 
                     }
                 </select>
+                <label for="category" class="form-label">Category</label>
             </div>
-            <div class="mb-3">
-                <label for="interval" class="form-label">Repeat</label>
+
+            <div class="form-floating mb-3">
                 <select class="form-select" aria-label="Default select example" id="interval" @bind="_selectedIntervalIndex">
-                    @foreach (var interval in _intervals)
+                    @{int j = 0;}
+                    @foreach (var interval in Enum.GetValues<BookingInterval>())
                     {
-                        <option value="@_intervals.IndexOf(interval)">@(interval?.ToString() ?? "Non repeating")</option>
+                        <option value="@(j++)">@interval</option>
+                        
                     }
                 </select>
+                <label for="interval" class="form-label">Repeat</label>
             </div>
         </form>
     </Body>
@@ -77,31 +85,6 @@
     private int _selectedCategoryIndex;
     private int _selectedIntervalIndex;
 
-    private List<DateInterval?> _intervals;
-    private List<Category?> _categories = new List<Category?>();
-
-
-    public EntryEditor()
-    {
-        _intervals = new List<DateInterval?>() { null };
-
-        foreach (var interval in Enum.GetValues<DateInterval>())
-        {
-            _intervals.Add(interval);
-        }
-    }
-
-
-    private void AquireCategories()
-    {
-        _categories = new List<Category?>() { null };
-
-        foreach (var category in App.UserData.Plan.Categories)
-        {
-            _categories.Add(category);
-        }
-    }
-
 
     public void Open()
     {
@@ -112,9 +95,7 @@
 
     public void Open(Entry entry)
     {
-        AquireCategories();
         _currentEntry = entry;
-
 
 
         if (_newEntry)
@@ -127,10 +108,10 @@
             _valueSign = entry.Value >= 0 ? "+" : "-";
             _valueString = $"{Math.Abs(entry.Value):0.00}";
         }
-        _selectedCategoryIndex = _categories.IndexOf(_currentEntry.Category);
-        _selectedIntervalIndex = _intervals.IndexOf(_currentEntry.Interval);
+        _selectedCategoryIndex = App.UserData.Plan.Categories.IndexOf(_currentEntry.Category);
+        _selectedIntervalIndex = Enum.GetValues<BookingInterval>().ToList().IndexOf(_currentEntry.Interval);
 
-        _modal.Open();
+        _modal?.Open();
         StateHasChanged();
     }
 
@@ -139,7 +120,7 @@
     {
         StateHasChanged();
         _newEntry = false;
-        _modal.Close();
+        _modal?.Close();
     }
 
 
@@ -148,8 +129,8 @@
         decimal.TryParse(_valueSign + _valueString, out decimal value);
         _currentEntry.Value = value;
 
-        _currentEntry.Category = _categories[_selectedCategoryIndex];
-        _currentEntry.Interval = _intervals[_selectedIntervalIndex];
+        _currentEntry.Category = App.UserData.Plan.Categories[_selectedCategoryIndex];
+        _currentEntry.Interval = Enum.GetValues<BookingInterval>()[_selectedIntervalIndex];
     }
 
 

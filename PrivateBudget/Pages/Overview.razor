@@ -1,5 +1,12 @@
 ﻿@page "/"
+@using PrivateBudget.Components
 
 <PageTitle>Overview</PageTitle>
 
-Shows monthly postings and available budgets
+<div class="container-fluid">
+    <div class="row justify-content-md-center">
+        <div class="col col-md-auto p-4">
+            <MonthlyBookings Plan="App.UserData.Plan"></MonthlyBookings>
+        </div>
+    </div>
+</div>
