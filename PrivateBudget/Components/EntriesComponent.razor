@@ -27,7 +27,7 @@
                     <tr>
                         <td>@FormatDate(entry)</td>
                         <td>@entry.Name</td>
-                        <td class="value @GetValueClass(entry.Value)">@FormatValue(entry.Value)</td>
+                        <td><ColoredCurrencyComponent CurrencySymbol="'€'" Value="@entry.Value" /></td>
                         <td><CategoryComponent Category="@entry.Category" /></td>
                         <td>@entry.Interval</td>
                         <td>@entry.Description</td>
@@ -69,15 +69,7 @@
     }
 
 
-    private string GetValueClass(decimal value)
-    {
-        if (value > 0) { return "credit"; }
-        else if (value < 0) { return "debit"; }
-        else { return string.Empty; }
-    }
 
-
-    private string FormatValue(decimal value) => $"{(value >= 0 ? "+" : "")}{value:0.00} €";
 
 
     private string FormatDate(Entry entry) => $"{entry.StartDate}{(entry.EndDate == null ? string.Empty : $" - {entry.EndDate}")}";

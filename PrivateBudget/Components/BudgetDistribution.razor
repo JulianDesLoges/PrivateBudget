@@ -1,38 +1,61 @@
 ﻿@using System.Text.Json;
+@using PrivateBudget.Client.Models;
 @inject IJSRuntime JS
 
 <div class="card">
     <div class="card-header hstack">
         <div>Budget Distribution</div>
     </div>
-    <div class="card-body">
-        <canvas width="500" height="500" id="budget-donut"></canvas>
+    <div class="card-body d-flex">
+        <canvas width="500" height="500" id="budget-donut" class="me-5"></canvas>
+        <ul class="list-group list-group-flush justify-content-center">
+            @foreach (var category in Categories?.OrderByDescending(x => x.MonthlyBudget))
+            {
+                if (category.Name != "Einkommen")
+                {
+                    <li class="list-group-item"><CategoryComponent Category="@category" /></li>
+                }
+            }
+        </ul>
     </div>
 </div>
 
 @code {
+    [Parameter]
+    public List<Category>? Categories { get; set; }
+
+    [Parameter]
+    public string? IncomeCategoryName { get; set; }
+
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        decimal totalIncome = 1;
+
+        if (Categories == null)
+        {
+            throw new NullReferenceException("Categories is null.");
+        }
+
+        if (IncomeCategoryName == null)
+        {
+            throw new NullReferenceException("IncomeCategoryName is null.");
+        }
+
+        decimal totalIncome = Categories.Find(x => x.Name == IncomeCategoryName)?.MonthlyBudget ?? 1;
         var dict = new Dictionary<string, decimal>();
 
-        foreach (var category in App.UserData.Plan.Categories)
+
+        foreach (var category in Categories)
         {
-            if (category.Name == "Einkommen")
+            if (category.Name != IncomeCategoryName)
             {
-                totalIncome = category.MonthlyBudget ?? 1;
-                break;
+                if (category.MonthlyBudget > 0)
+                {
+                    dict.Add(category.Color, ((category.MonthlyBudget ?? 0) / totalIncome));
+                }
             }
         }
 
-
-        foreach (var category in App.UserData.Plan.Categories)
-        {
-            if (category.Name != "Einkommen")
-            {
-                dict.Add(category.Color, ((category.MonthlyBudget ?? 0) / totalIncome));
-            }
-        }
 
         dict = dict.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
 
@@ -42,6 +65,6 @@
             "#budget-donut",
             0.3,
             JsonSerializer.Serialize(dict)
-    );
+        );
     }
 }

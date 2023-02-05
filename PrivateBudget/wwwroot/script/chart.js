@@ -21,7 +21,7 @@
     draw() {
         let lastDeg = 0;
         for (let vp of Object.entries(this.data)) {
-            this.drawSegment(vp[0] + "CC", lastDeg, lastDeg + vp[1] * 360);
+            this.drawSegment(vp[0], lastDeg, lastDeg + vp[1] * 360);
             lastDeg = lastDeg + vp[1] * 360;
         }
     }

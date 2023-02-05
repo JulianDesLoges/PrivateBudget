@@ -2,8 +2,3 @@
     color: var(--bs-light-text);
     cursor: pointer;
 }
-
-
-td.value {
-    text-align: right;
-}

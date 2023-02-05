@@ -1,0 +1,19 @@
+﻿<div class="value @GetValueClass(Value)">@FormatValue(Value)</div>
+
+@code {
+    [Parameter]
+    public decimal? Value { get; set; }
+
+    [Parameter]
+    public char CurrencySymbol { get; set; }
+
+    private string GetValueClass(decimal? value)
+    {
+        if (value > 0) { return "credit"; }
+        else if (value < 0) { return "debit"; }
+        else { return string.Empty; }
+    }
+
+
+    private string FormatValue(decimal? value) => $"{(value >= 0 ? "+" : "")}{value:0.00} {CurrencySymbol}";
+}
