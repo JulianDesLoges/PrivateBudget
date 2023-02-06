@@ -31,7 +31,7 @@
 </form>
 
 @code {
-    private DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.Now).AddYears(-2);
+    private DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.Now).AddYears(-10);
 
     private DateOnly EndDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 
@@ -47,31 +47,37 @@
         // Categories
         for (int i = 0; i < CategoryAmount; i++)
         {
-            App.UserData.Plan.Categories.Add(RandomCategory());
+            App.UserData.Plan.Categories.Add(RandomCategory(false));
         }
-        App.UserData.Plan.IncomeCategory = App.UserData.Plan.Categories[1];
+        App.UserData.Plan.Categories.Add(RandomCategory(true));
+        App.UserData.Plan.IncomeCategory = App.UserData.Plan.Categories[^1];
 
 
         // Entries
         for (int i = 0; i < RepeatingEntryAmount; i++)
         {
-            App.UserData.Plan.Entries.Add(RandomEntry());
+            App.UserData.Plan.Entries.Add(RandomEntry(true));
+        }
+
+        for (int i = 0; i < SingleTimeEntryAmount; i++)
+        {
+            App.UserData.Plan.Entries.Add(RandomEntry(false));
         }
     }
 
 
-    private Category RandomCategory()
+    private Category RandomCategory(bool income)
     {
         return new Category()
         {
             Color = RandomColor(),
             Name = RandomString(),
-            MonthlyBudget = RandomDecimal(false, true)
+            MonthlyBudget = income ? RandomDecimal(5000, 10000) : RandomDecimal(10, 500, true)
         };
     }
 
 
-    private Entry RandomEntry()
+    private Entry RandomEntry(bool repeating)
     {
         var random = new Random();
 
@@ -81,9 +87,9 @@
             Description = RandomString(),
             EndDate = null,
             StartDate = RandomDate(),
-            Interval = Enum.GetValues<BookingInterval>()[random.Next(Enum.GetValues<BookingInterval>().Length)],
+            Interval = repeating ? Enum.GetValues<BookingInterval>()[random.Next(Enum.GetValues<BookingInterval>().Length - 1) + 1] : BookingInterval.SingleTime,
             Name = RandomString(),
-            Value = (decimal)RandomDecimal()
+            Value = (decimal)RandomDecimal(-5000, 5000)
         };
     }
 
@@ -121,7 +127,7 @@
     }
 
 
-    private decimal? RandomDecimal(bool negative = true, bool includeNull = false)
+    private decimal? RandomDecimal(decimal min, decimal max, bool includeNull = false)
     {
         var random = new Random();
 
@@ -133,9 +139,7 @@
             }
         }
 
-
-        int min = negative ? -500000 : 0;
-        int value = random.Next(min, 500000);
+        int value = random.Next((int)(min * 100), (int)(max * 100));
 
         return value / 100m;
     }
