@@ -1,0 +1,153 @@
+﻿@page "/settings"
+@using PrivateBudget.Client.Models;
+
+<form @onsubmit="GenerateData">
+    <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="category-amount" placeholder="Category amount" @bind="CategoryAmount" />
+        <label for="category-amount">Category amount</label>
+    </div>
+
+    <div class="form-floating mb-3">
+        <input type="date" class="form-control" id="start-date" placeholder="Start" @bind="StartDate" />
+        <label for="start-date">Start</label>
+    </div>
+
+    <div class="form-floating mb-3">
+        <input type="date" class="form-control" id="end-date" placeholder="End" @bind="EndDate" />
+        <label for="end-date">End</label>
+    </div>
+
+    <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="repeating-entry-amount" placeholder="Repeating entry amount" @bind="RepeatingEntryAmount" />
+        <label for="repeating-entry-amount">Repeating entry amount</label>
+    </div>
+
+    <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="single-amount" placeholder="Single time entry amount" @bind="SingleTimeEntryAmount" />
+        <label for="single-entry-amount">Single time entry amount</label>
+    </div>
+
+    <button class="btn btn-primary">Generate</button>
+</form>
+
+@code {
+    private DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.Now).AddYears(-2);
+
+    private DateOnly EndDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
+
+    private int CategoryAmount { get; set; } = 20;
+
+    private int RepeatingEntryAmount { get; set; } = 80;
+
+    private int SingleTimeEntryAmount { get; set; } = 5000;
+
+
+    private void GenerateData()
+    {
+        // Categories
+        for (int i = 0; i < CategoryAmount; i++)
+        {
+            App.UserData.Plan.Categories.Add(RandomCategory());
+        }
+        App.UserData.Plan.IncomeCategory = App.UserData.Plan.Categories[1];
+
+
+        // Entries
+        for (int i = 0; i < RepeatingEntryAmount; i++)
+        {
+            App.UserData.Plan.Entries.Add(RandomEntry());
+        }
+    }
+
+
+    private Category RandomCategory()
+    {
+        return new Category()
+        {
+            Color = RandomColor(),
+            Name = RandomString(),
+            MonthlyBudget = RandomDecimal(false, true)
+        };
+    }
+
+
+    private Entry RandomEntry()
+    {
+        var random = new Random();
+
+        return new Entry()
+        {
+            Category = App.UserData.Plan.Categories[random.Next(CategoryAmount)],
+            Description = RandomString(),
+            EndDate = null,
+            StartDate = RandomDate(),
+            Interval = Enum.GetValues<BookingInterval>()[random.Next(Enum.GetValues<BookingInterval>().Length)],
+            Name = RandomString(),
+            Value = (decimal)RandomDecimal()
+        };
+    }
+
+
+    private string RandomString()
+    {
+        string letters = "abcdefghijklmnopqrstuvw ";
+        var random = new Random();
+
+        string result = "";
+        var len = random.Next(5, 20);
+
+        for (int i = 0; i < len; i++)
+        {
+            result += letters[random.Next(letters.Length)];
+        }
+
+        return result;
+    }
+
+
+    private string RandomColor()
+    {
+        string letters = "0123456789abcdef";
+        var random = new Random();
+
+        string result = "#";
+
+        for (int i = 0; i < 6; i++)
+        {
+            result += letters[random.Next(letters.Length)];
+        }
+
+        return result;
+    }
+
+
+    private decimal? RandomDecimal(bool negative = true, bool includeNull = false)
+    {
+        var random = new Random();
+
+        if (includeNull)
+        {
+            if (random.NextDouble() <= 0)
+            {
+                return null;
+            }
+        }
+
+
+        int min = negative ? -500000 : 0;
+        int value = random.Next(min, 500000);
+
+        return value / 100m;
+    }
+
+
+    private DateOnly RandomDate()
+    {
+        var random = new Random();
+        double daysRange = (new DateTime(EndDate.Year, EndDate.Month, EndDate.Day) - new DateTime(StartDate.Year, StartDate.Month, StartDate.Day)).TotalDays;
+
+        long days = random.NextInt64(0, (long)daysRange);
+
+        return StartDate.AddDays((int)days);
+    }
+}

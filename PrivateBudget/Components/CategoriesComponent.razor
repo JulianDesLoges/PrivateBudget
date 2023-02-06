@@ -37,7 +37,7 @@
                     {
                         <tr>
                             <td><CategoryComponent Category="@category" /></td>
-                            <td class="value">@(category?.MonthlyBudget?.ToString("0.00 €") ?? "no budget")</td>
+                            <td class="value">@(category.MonthlyBudget?.ToString("0.00 €") ?? "no budget")</td>
                             <td>
                                 <span class="oi oi-pencil" @onclick="() => _categoryEditor?.Open(category)" />
                             </td>

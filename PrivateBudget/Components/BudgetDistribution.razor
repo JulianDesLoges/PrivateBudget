@@ -25,7 +25,7 @@
                     <ColoredCurrencyComponent CurrencySymbol="'€'" Value="@IncomeCategory.MonthlyBudget"></ColoredCurrencyComponent>
                 </li>
 
-                @foreach (var category in Categories?.OrderByDescending(x => x.MonthlyBudget))
+                @foreach (var category in Categories?.Where(x => x != null).OrderByDescending(x => x.MonthlyBudget))
                 {
                     if (category.Name != IncomeCategory?.Name && category.MonthlyBudget != null)
                     {
