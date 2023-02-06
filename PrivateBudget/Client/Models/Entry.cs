@@ -26,7 +26,7 @@ namespace PrivateBudget.Client.Models
 
             return Interval switch
             {
-                BookingInterval.SingleTime => StartDate >= monthStart && StartDate <= monthEnd,
+                BookingInterval.SingleTime => StartDate.Month == monthStart.Month && StartDate.Year == monthStart.Year,
                 BookingInterval.Monthly => StartDate.Month <= monthStart.Month
                                         && StartDate.Year <= monthStart.Year
                                         && (EndDate?.Month ?? monthEnd.Month) >= monthEnd.Month

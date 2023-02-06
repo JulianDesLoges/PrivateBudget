@@ -115,7 +115,7 @@
 
     private void MonthRight()
     {
-        if (Value.AddMonths(1) < End)
+        if (Value.AddMonths(1) <= End)
         {
             Value = Value.AddMonths(1);
             HandleDateChanged();

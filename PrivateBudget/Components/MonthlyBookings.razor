@@ -1,29 +1,18 @@
 ﻿@using PrivateBudget.Client.Models;
+@using PrivateBudget.Components.Editors
+
+<BookingEditor @ref="_bookingEditor"></BookingEditor>
 
 <div class="card">
     <div class="card-header hstack">
         <div>Monthly bookings</div>
+        <div class="btn btn-outline-primary ms-auto" @onclick="() => _bookingEditor?.Open()">+</div>
     </div>
     <div class="card-body">
         <div class="container mb-5">
             <div class="row align-items-center">
-                <div class="col-5">
-                    <MonthSelect Start="_firstDate" End="DateOnly.FromDateTime(DateTime.Now).AddMonths(1)" Disabled="CurrentMonth" @ref="_monthSelect" />
-                </div>
-
-                <div class="form-check ms-auto col-auto">
-                    <input class="form-check-input" type="checkbox" id="current-month" @bind="CurrentMonth">
-                    <label class="form-check-label" for="current-month">Current month</label>
-                </div>
-
-                <div class="form-check col-auto">
-                    <input class="form-check-input" type="checkbox" id="virtual-booking">
-                    <label class="form-check-label" for="virtual-booking">Virtual booking</label>
-                </div>
-
-                <div class="form-check col-auto">
-                    <input class="form-check-input" type="checkbox" id="ignore-day" disabled="@(!CurrentMonth)">
-                    <label class="form-check-label" for="ignore-day">Ignore day</label>
+                <div class="col-xxl-5">
+                    <MonthSelect Start="_firstDate" End="_lastDate" Disabled="false" @ref="_monthSelect" />
                 </div>
             </div>
         </div>
@@ -39,7 +28,7 @@
             </thead>
 
             <tbody>
-                @foreach (var booking in _bookings.OrderBy(x => x.Date))
+                @foreach (var booking in CurrentBookingMonth.Bookings.OrderBy(x => x.Date))
                 {
                     <tr>
                         <td>@booking.Date</td>
@@ -53,7 +42,7 @@
                 <tr style="border:transparent;">
                     <td><strong>Net</strong></td>
                     <td></td>
-                    <td><ColoredCurrencyComponent CurrencySymbol="'€'" Value="@_net"></ColoredCurrencyComponent></td>
+                    <td><ColoredCurrencyComponent CurrencySymbol="'€'" Value="@CurrentBookingMonth.Net"></ColoredCurrencyComponent></td>
                     <td></td>
                     <td></td>
                 </tr>
@@ -75,25 +64,18 @@
     [Parameter]
     public Plan? Plan { get; set; }
 
+    private BookingEditor? _bookingEditor;
     private MonthSelect? _monthSelect;
-
-    private bool CurrentMonth
-    {
-        get => App.UserData.CurrentMonth;
-        set
-        {
-            App.UserData.CurrentMonth = value;
-            _monthSelect.Value = DateOnly.FromDateTime(DateTime.Now);
-            GenerateBookings();
-        }
-    }
 
 
     private DateOnly _firstDate;
+    private DateOnly _lastDate;
+
+    private Dictionary<DateOnly, BookingMonth> _bookingMonths = new Dictionary<DateOnly, BookingMonth>();
+
+    private BookingMonth CurrentBookingMonth { get; set; } = new BookingMonth(new DateOnly());
 
 
-    private List<Booking> _bookings = new List<Booking>();
-    private decimal _net;
     private decimal _total;
 
 
@@ -107,11 +89,24 @@
         if (Plan.Entries.Count > 0)
         {
             _firstDate = Plan.Entries.OrderBy(x => x.StartDate).First().StartDate;
+            _lastDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(1));
         }
         else
         {
             _firstDate = DateOnly.FromDateTime(DateTime.Now);
+            _lastDate = _firstDate;
         }
+
+        _firstDate = new DateOnly(_firstDate.Year, _firstDate.Month, 1);
+        _lastDate = new DateOnly(_lastDate.Year, _lastDate.Month, 1);
+
+        GenerateBookingMonths();
+
+        var currentDate = DateOnly.FromDateTime(DateTime.Now);
+        currentDate = new DateOnly(currentDate.Year, currentDate.Month, 1);
+
+        CurrentBookingMonth = _bookingMonths[currentDate];
+        _total = CalculateTotal(currentDate);
     }
 
 
@@ -124,49 +119,128 @@
                 throw new NullReferenceException("_monthSelect is null.");
             }
 
-            GenerateBookings();
+            if (_bookingEditor == null)
+            {
+                throw new NullReferenceException("_bookingEditor is null.");
+            }
+
+            _bookingEditor.BookingCreated += BookingCreated;
+            _bookingEditor.BookingModified += BookingModified;
+            _bookingEditor.BookingDeleted += BookingDeleted;
+
 
             _monthSelect.DateChanged += DateChanged;
+            StateHasChanged();
         }
     }
 
 
-    private void DateChanged() => GenerateBookings();
-
-
-    private void GenerateBookings()
+    private void DateChanged() 
     {
         if (_monthSelect == null)
         {
             throw new NullReferenceException("_monthSelect is null.");
         }
 
-        if (Plan == null)
+        CurrentBookingMonth = _bookingMonths[_monthSelect.Value];
+
+
+        _total = CalculateTotal(_monthSelect.Value);
+
+        StateHasChanged();
+    }
+
+
+    private void GenerateBookingMonths()
+    {
+        _bookingMonths.Clear();
+
+
+        // Create empty booking month for each month
+        foreach (var month in EnumerateAvailableMonths())
         {
-            throw new NullReferenceException("Plan is null.");
+            _bookingMonths.Add(month, new BookingMonth(month));
         }
 
 
-        DateOnly start = _monthSelect.Value;
-        //DateOnly end = _monthSelect.Value.AddMonths(1);
-
-        _bookings = new List<Booking>();
-
+        // Iterate over all entries and create bookings for each month
         foreach (var entry in Plan.Entries)
         {
-            if (entry.HappensThisMonth(start))
+            foreach (var month in EnumerateAvailableMonths())
             {
-                _bookings.Add(new Booking(entry, start.Month, start.Year));
+                if (entry.HappensThisMonth(month))
+                {
+                    _bookingMonths[month].AddBooking(new Booking(entry, month.Month, month.Year));
+                }
             }
         }
 
-        _net = 0;
-        foreach (var booking in _bookings)
-        {
-            _net += booking.Value;
-        }
-        _total = _net;
+    }
 
+
+    private decimal CalculateTotal(DateOnly until)
+    {
+        decimal total = 0;
+
+        foreach (var month in EnumerateAvailableMonths())
+        {
+            if (month <= until)
+            {
+                total += _bookingMonths[month].Net;
+            }
+            else
+            {
+                return total;
+            }
+        }
+
+        return total;
+    }
+
+
+    private IEnumerable<DateOnly> EnumerateAvailableMonths()
+    {
+        var end = new DateOnly(_lastDate.Year, _lastDate.Month, 1);
+        var current = new DateOnly(_firstDate.Year, _firstDate.Month, 1);
+
+        while (current <= end)
+        {
+            yield return current;
+            current = current.AddMonths(1);
+        }
+    }
+
+    private void BookingCreated(Entry? entry)
+    {
+        if (entry != null)
+        {
+            Plan.Entries.Add(entry);
+
+            GenerateBookingMonths();
+            _total = CalculateTotal(_monthSelect.Value);
+            StateHasChanged();
+
+        }
+    }
+
+
+    private void BookingModified(Entry? entry)
+    {
+        GenerateBookingMonths();
+        _total = CalculateTotal(_monthSelect.Value);
         StateHasChanged();
+    }
+
+
+    private void BookingDeleted(Entry? entry)
+    {
+        if (entry != null)
+        {
+            Plan.Entries.Remove(entry);
+
+            GenerateBookingMonths();
+            _total = CalculateTotal(_monthSelect.Value);
+            StateHasChanged();
+        }
     }
 }
