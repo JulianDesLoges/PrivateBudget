@@ -1,12 +1,12 @@
 ﻿@using PrivateBudget.Client.Models;
 @using PrivateBudget.Components.Editors
 
-<BookingEditor @ref="_bookingEditor"></BookingEditor>
+<EntryEditor @ref="_entryEditor"></EntryEditor>
 
 <div class="card">
     <div class="card-header hstack">
         <div>Monthly bookings</div>
-        <div class="btn btn-outline-primary ms-auto" @onclick="() => _bookingEditor?.Open()">+</div>
+        <div class="btn btn-outline-primary ms-auto" @onclick="() => _entryEditor?.Open()">+</div>
     </div>
     <div class="card-body">
         <div class="container mb-5">
@@ -24,6 +24,8 @@
                     <th scope="col">Value</th>
                     <th scope="col">Category</th>
                     <th scope="col">Description</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
                 </tr>
             </thead>
 
@@ -36,6 +38,12 @@
                         <td><ColoredCurrencyComponent CurrencySymbol="'€'" Value="@booking.Value" /></td>
                         <td><CategoryComponent Category="@booking.Category" /></td>
                         <td>@booking.Description</td>
+                        <td>
+                            <span class="oi oi-pencil" @onclick="() => _entryEditor?.Open(booking.Entry)" />
+                        </td>
+                        <td>
+                            <span class="oi oi-trash" @onclick="() => EntryDeleted(booking.Entry)" />
+                        </td>
                     </tr>
                 }
 
@@ -45,12 +53,16 @@
                     <td><ColoredCurrencyComponent CurrencySymbol="'€'" Value="@CurrentBookingMonth.Net"></ColoredCurrencyComponent></td>
                     <td></td>
                     <td></td>
+                    <td></td>
+                    <td></td>
                 </tr>
 
                 <tr style="border:transparent;">
                     <td><strong>Total</strong></td>
                     <td></td>
                     <td><ColoredCurrencyComponent CurrencySymbol="'€'" Value="@_total"></ColoredCurrencyComponent></td>
+                    <td></td>
+                    <td></td>
                     <td></td>
                     <td></td>
                 </tr>
@@ -64,7 +76,7 @@
     [Parameter]
     public Plan? Plan { get; set; }
 
-    private BookingEditor? _bookingEditor;
+    private EntryEditor? _entryEditor;
     private MonthSelect? _monthSelect;
 
 
@@ -119,14 +131,13 @@
                 throw new NullReferenceException("_monthSelect is null.");
             }
 
-            if (_bookingEditor == null)
+            if (_entryEditor == null)
             {
                 throw new NullReferenceException("_bookingEditor is null.");
             }
 
-            _bookingEditor.BookingCreated += BookingCreated;
-            _bookingEditor.BookingModified += BookingModified;
-            _bookingEditor.BookingDeleted += BookingDeleted;
+            _entryEditor.EntryCreated += EntryCreated;
+            _entryEditor.EntryModified += EntryModified;
 
 
             _monthSelect.DateChanged += DateChanged;
@@ -143,8 +154,6 @@
         }
 
         CurrentBookingMonth = _bookingMonths[_monthSelect.Value];
-
-
         _total = CalculateTotal(_monthSelect.Value);
 
         StateHasChanged();
@@ -210,7 +219,8 @@
         }
     }
 
-    private void BookingCreated(Entry? entry)
+
+    private void EntryCreated(Entry? entry)
     {
         if (entry != null)
         {
@@ -218,21 +228,23 @@
 
             GenerateBookingMonths();
             _total = CalculateTotal(_monthSelect.Value);
+            CurrentBookingMonth = _bookingMonths[_monthSelect.Value];
             StateHasChanged();
 
         }
     }
 
 
-    private void BookingModified(Entry? entry)
+    private void EntryModified(Entry? entry)
     {
         GenerateBookingMonths();
         _total = CalculateTotal(_monthSelect.Value);
+        CurrentBookingMonth = _bookingMonths[_monthSelect.Value];
         StateHasChanged();
     }
 
 
-    private void BookingDeleted(Entry? entry)
+    private void EntryDeleted(Entry? entry)
     {
         if (entry != null)
         {
@@ -240,6 +252,7 @@
 
             GenerateBookingMonths();
             _total = CalculateTotal(_monthSelect.Value);
+            CurrentBookingMonth = _bookingMonths[_monthSelect.Value];
             StateHasChanged();
         }
     }

@@ -30,21 +30,27 @@
                 </tr>
             </thead>
 
-            @foreach (var category in Plan.Categories)
-            {
-                <tbody>
-                    <tr>
-                        <td><CategoryComponent Category="@category" /></td>
-                        <td class="value">@(category?.MonthlyBudget?.ToString("0.00 €") ?? "no budget")</td>
-                        <td>
-                            <span class="oi oi-pencil" @onclick="() => _categoryEditor?.Open(category)" />
-                        </td>
-                    </tr>
-                </tbody>
-            }
+            <tbody>
+                @foreach (var category in Plan.Categories)
+                {
+                    if (category != null)
+                    {
+                        <tr>
+                            <td><CategoryComponent Category="@category" /></td>
+                            <td class="value">@(category?.MonthlyBudget?.ToString("0.00 €") ?? "no budget")</td>
+                            <td>
+                                <span class="oi oi-pencil" @onclick="() => _categoryEditor?.Open(category)" />
+                            </td>
+                            <td>
+                                <span class="oi oi-trash" @onclick="() => CategoryDeleted(category)" />
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
         </table>
 
-        @if (Plan.Categories.Count <= 0)
+        @if (Plan.Categories.Count <= 1)
         {
             <div style="text-align:center">No categories</div>
         }
@@ -81,7 +87,6 @@
 
             _categoryEditor.CategoryCreated += CategoryCreated;
             _categoryEditor.CategoryModified += CategoryModified;
-            _categoryEditor.CategoryDeleted += CategoryDeleted;
         }
 
         SelectedIncomeCategoryIndex = Plan.Categories.IndexOf(Plan.IncomeCategory);

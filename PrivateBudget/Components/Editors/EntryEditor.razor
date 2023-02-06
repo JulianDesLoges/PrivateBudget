@@ -35,11 +35,6 @@
             </div>
 
             <div class="form-floating mb-3">
-                <input type="date" class="form-control" id="date" placeholder="Date" @bind="_currentEntry.StartDate" />
-                <label for="date" class="form-label">Date</label>
-            </div>
-
-            <div class="form-floating mb-3">
                 <select class="form-select" aria-label="Default select example" id="category" @bind="_selectedCategoryIndex">
                     @{int i = 0;}
                     @foreach (var category in App.UserData.Plan.Categories)
@@ -61,10 +56,27 @@
                 </select>
                 <label for="interval" class="form-label">Repeat</label>
             </div>
+
+            <div class="input-group mb-3">
+                <div class="form-floating">
+                    <input type="date" class="form-control" id="start-date" placeholder="Start Date" @bind="_currentEntry.StartDate" />
+                    <label for="start-date" class="form-label">Start Date</label>
+                </div>
+                @if (_selectedIntervalIndex != 0)
+                {
+                    <div class="form-floating">
+                        <input type="date" class="form-control" id="end-date" placeholder="End Date" @bind="_currentEntry.EndDate" />
+                        <label for="end-date" class="form-label">End Date</label>
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary" @onclick="ClearEndDate">
+                        <span class="oi oi-x"></span>
+                    </button>
+                }
+            </div>
+
         </form>
     </Body>
     <Footer>
-        <button type="button" class="btn btn-danger" @onclick="Delete">Delete</button>
         <button type="button" class="btn btn-primary ms-auto" @onclick="Save">Save</button>
         <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Close">Close</button>
     </Footer>
@@ -73,7 +85,6 @@
 @code {
     public event Action<Entry?>? EntryCreated;
     public event Action<Entry?>? EntryModified;
-    public event Action<Entry?>? EntryDeleted;
 
     private Modal? _modal;
     private Entry _currentEntry = new Entry();
@@ -151,21 +162,15 @@
     }
 
 
-    private void Delete()
-    {
-        UpdateEntry();
-
-        if (!_newEntry)
-        {
-            EntryDeleted?.Invoke(_currentEntry);
-        }
-        Close();
-    }
-
-
     private void HandleValueTypeToggle()
     {
         _valueSign = _valueSign == "+" ? "-" : "+";
         StateHasChanged();
+    }
+
+
+    private void ClearEndDate()
+    {
+        _currentEntry.EndDate = null;
     }
 }

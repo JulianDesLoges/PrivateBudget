@@ -30,7 +30,6 @@
         </form>
     </Body>
     <Footer>
-        <button type="button" class="btn btn-danger" @onclick="Delete">Delete</button>
         <button type="button" class="btn btn-primary ms-auto" @onclick="Save">Save</button>
         <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="Close">Close</button>
     </Footer>
@@ -39,7 +38,6 @@
 @code {
     public event Action<Category?>? CategoryCreated;
     public event Action<Category?>? CategoryModified;
-    public event Action<Category?>? CategoryDeleted;
 
     private Modal? _modal;
     private Category? _currentCategory = new Category();
@@ -82,16 +80,6 @@
             CategoryModified?.Invoke(_currentCategory);
         }
 
-        Close();
-    }
-
-
-    private void Delete()
-    {
-        if (!_newCategory)
-        {
-            CategoryDeleted?.Invoke(_currentCategory);
-        }
         Close();
     }
 }

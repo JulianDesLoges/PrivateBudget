@@ -3,6 +3,11 @@
     cursor: pointer;
 }
 
+.oi-trash:hover {
+    color: var(--bs-danger);
+}
+
+
 td.value {
     text-align: right;
 }

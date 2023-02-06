@@ -5,7 +5,7 @@
 
 <div class="card">
     <div class="card-header hstack">
-        <div>Entries</div>
+        <div>Repeating Bookings</div>
         <div class="btn btn-outline-primary ms-auto" @onclick="() => _entryEditor?.Open()">+</div>
     </div>
     <div class="card-body">
@@ -19,11 +19,12 @@
                     <th scope="col">Interval</th>
                     <th scope="col">Description</th>
                     <th scope="col"></th>
+                    <th scope="col"></th>
                 </tr>
             </thead>
             
             <tbody>
-                @foreach (var entry in Entries.OrderBy(x => x.StartDate))
+                @foreach (var entry in Entries.Where(x => x.Interval != BookingInterval.SingleTime).OrderBy(x => x.StartDate))
                 {
                     <tr>
                         <td>@FormatDate(entry)</td>
@@ -34,6 +35,9 @@
                         <td>@entry.Description</td>
                         <td>
                             <span class="oi oi-pencil" @onclick="() => _entryEditor?.Open(entry)" />
+                        </td>
+                        <td>
+                            <span class="oi oi-trash" @onclick="() => EntryDeleted(entry)" />
                         </td>
                     </tr>
                 }
@@ -65,7 +69,6 @@
 
             _entryEditor.EntryCreated += EntryCreated;
             _entryEditor.EntryModified += EntryModified;
-            _entryEditor.EntryDeleted += EntryDeleted;
         }
     }
 

@@ -4,19 +4,21 @@ namespace PrivateBudget.Client.Models
 {
     public class Booking
     {
-        public string Name { get; set; }
+        public Entry Entry { get; }
 
-        public string Description { get; set; }
+        public string Name { get; }
 
-        public decimal Value { get; set; }
+        public string Description { get; }
 
-        public Category? Category { get; set; }
+        public decimal Value { get; }
 
-        public DateOnly Date { get; set; }
+        public Category? Category { get; }
 
+        public DateOnly Date { get; }
 
         public Booking(Entry entry, int month, int year)
         {
+            Entry = entry;
             Name = entry.Name;
             Description = entry.Description;
             Value = entry.Value;
