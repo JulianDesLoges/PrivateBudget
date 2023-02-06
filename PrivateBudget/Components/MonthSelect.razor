@@ -1,17 +1,27 @@
 ﻿<div class="input-group">
+    <button class="btn btn-outline-secondary" disabled="@Disabled" @onclick="MonthLeft"><span class="oi oi-chevron-left"></span></button>
+
     <div class="form-floating">
         <select class="form-select" aria-label="Month Select" id="month-select" @bind="Month" disabled="@Disabled">
-                @foreach (var month in MONTHS)
+                @foreach (var month in _currentMonths)
                 {
                     <option value="@month.Key">@month.Value</option>
                 }
         </select>
         <label for="month-selct">Month</label>
     </div>
+
     <div class="form-floating">
-        <input class="form-control" type="text" id="year" placeholder="Year" @bind="Year" disabled="@Disabled"/>
-        <label for="year">Year</label>
+        <select class="form-select" aria-label="Year Select" id="year-select" @bind="Year" disabled="@Disabled">
+            @foreach (var year in _availableYears)
+            {
+                        <option value="@year">@year</option>
+            }
+        </select>
+        <label for="year-selct">Year</label>
     </div>
+
+    <button class="btn btn-outline-secondary" disabled="@Disabled" @onclick="MonthRight"><span class="oi oi-chevron-right"></span></button>
 </div>
 
 @code {
@@ -19,6 +29,15 @@
 
     [Parameter]
     public bool Disabled { get; set; }
+
+    [Parameter]
+    public DateOnly Start { get; set; }
+
+    [Parameter]
+    public DateOnly End { get; set; }
+
+
+
 
     public DateOnly Value { get; set; } = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, 1);
 
@@ -39,19 +58,16 @@
         { 12, "December" }
     };
 
+    private List<int> _availableYears = new List<int>();
+    private Dictionary<int, string> _currentMonths = new Dictionary<int, string>();
 
-    private string Year {
-        get => Value.Year.ToString();
+
+    private int Year {
+        get => Value.Year;
         set
         {
-            if (int.TryParse(value, out int iValue))
-            {
-                if (iValue > 200 && iValue < 9999)
-                {
-                    Value = new DateOnly(int.Parse(value), Value.Month, 1);
-                    DateChanged?.Invoke();
-                }
-            }
+            Value = new DateOnly(value, Value.Month, 1);
+            HandleDateChanged();
         }
     }
 
@@ -60,17 +76,81 @@
         get => Value.Month;
         set
         {
-            if (value >= 1 && value <= 12)
-            {
-                Value = new DateOnly(Value.Year, value, 1);
-                DateChanged?.Invoke();
-            }
+            Value = new DateOnly(Value.Year, value, 1);
+            HandleDateChanged();
         }
     }
 
 
     protected override void OnInitialized()
     {
+        _availableYears.Clear();
+
+        for (int i = Start.Year; i <= End.Year; i++)
+        {
+            _availableYears.Add(i);
+        }
+
         Value = new DateOnly(Value.Year, Value.Month, 1);
+        UpdateAvailableMonths();
+    }
+
+
+    private void HandleDateChanged()
+    {
+        UpdateAvailableMonths();
+        DateChanged?.Invoke();
+    }
+
+
+    private void MonthLeft()
+    {
+        if (Value.AddMonths(-1) >= new DateOnly(Start.Year, Start.Month, 1))
+        {
+            Value = Value.AddMonths(-1);
+            HandleDateChanged();
+        }
+    }
+
+
+    private void MonthRight()
+    {
+        if (Value.AddMonths(1) < End)
+        {
+            Value = Value.AddMonths(1);
+            HandleDateChanged();
+        }
+    }
+
+
+
+    private void UpdateAvailableMonths()
+    {
+        int firstMonth = 1;
+        int lastMonth = 12;
+        int selectedMonth = Month;
+
+        if (Year == Start.Year)
+        {
+            firstMonth = Start.Month;
+            selectedMonth = selectedMonth < firstMonth ? firstMonth : selectedMonth;
+        }
+
+        if (Year == End.Year)
+        {
+            lastMonth = End.Month;
+            selectedMonth = selectedMonth > lastMonth ? lastMonth : selectedMonth;
+        }
+
+        Value = new DateOnly(Year, selectedMonth, 1);
+        _currentMonths.Clear();
+
+
+        for (int i = firstMonth; i <= lastMonth; i++)
+        {
+            _currentMonths.Add(i, MONTHS[i]);
+        }
+
+        StateHasChanged();
     }
 }

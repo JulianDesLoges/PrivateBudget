@@ -7,11 +7,11 @@
     <div class="card-body">
         <div class="container mb-5">
             <div class="row align-items-center">
-                <div class="col-auto">
-                    <MonthSelect Disabled="CurrentMonth" @ref="_monthSelect" />
+                <div class="col-5">
+                    <MonthSelect Start="_firstDate" End="DateOnly.FromDateTime(DateTime.Now).AddMonths(1)" Disabled="CurrentMonth" @ref="_monthSelect" />
                 </div>
 
-                <div class="form-check col-auto">
+                <div class="form-check ms-auto col-auto">
                     <input class="form-check-input" type="checkbox" id="current-month" @bind="CurrentMonth">
                     <label class="form-check-label" for="current-month">Current month</label>
                 </div>
@@ -89,9 +89,30 @@
     }
 
 
+    private DateOnly _firstDate;
+
+
     private List<Booking> _bookings = new List<Booking>();
     private decimal _net;
     private decimal _total;
+
+
+    protected override void OnInitialized()
+    {
+        if (Plan == null)
+        {
+            throw new NullReferenceException("Plan is null.");
+        }
+
+        if (Plan.Entries.Count > 0)
+        {
+            _firstDate = Plan.Entries.OrderBy(x => x.StartDate).First().StartDate;
+        }
+        else
+        {
+            _firstDate = DateOnly.FromDateTime(DateTime.Now);
+        }
+    }
 
 
     protected override void OnAfterRender(bool firstRender)
@@ -127,32 +148,15 @@
 
 
         DateOnly start = _monthSelect.Value;
-        DateOnly end = _monthSelect.Value.AddMonths(1);
+        //DateOnly end = _monthSelect.Value.AddMonths(1);
 
         _bookings = new List<Booking>();
 
         foreach (var entry in Plan.Entries)
         {
-            switch (entry.Interval)
+            if (entry.HappensThisMonth(start))
             {
-                case BookingInterval.SingleTime:
-                    if (entry.StartDate >= start && entry.StartDate <= end)
-                    {
-                        _bookings.Add(new Booking(entry, start.Month, start.Year));
-                    }
-                    break;
-                case BookingInterval.Monthly:
-                    if (entry.StartDate <= start && (entry.EndDate ?? end) >= end)
-                    {
-                        _bookings.Add(new Booking(entry, start.Month, start.Year));
-                    }
-                    break;
-                case BookingInterval.Yearly:
-                    if (entry.StartDate <= start && (entry.EndDate ?? end) >= end && entry.StartDate.Month == end.Month)
-                    {
-                        _bookings.Add(new Booking(entry, start.Month, start.Year));
-                    }
-                    break;
+                _bookings.Add(new Booking(entry, start.Month, start.Year));
             }
         }
 

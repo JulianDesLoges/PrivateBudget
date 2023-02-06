@@ -17,5 +17,25 @@ namespace PrivateBudget.Client.Models
         public DateOnly? EndDate { get; set; } = null;
 
         public BookingInterval Interval { get; set; } = BookingInterval.SingleTime;
+
+
+
+        public bool HappensThisMonth(DateOnly monthStart)
+        {
+            DateOnly monthEnd = monthStart.AddMonths(1);
+
+            return Interval switch
+            {
+                BookingInterval.SingleTime => StartDate >= monthStart && StartDate <= monthEnd,
+                BookingInterval.Monthly => StartDate.Month <= monthStart.Month
+                                        && StartDate.Year <= monthStart.Year
+                                        && (EndDate?.Month ?? monthEnd.Month) >= monthEnd.Month
+                                        && (EndDate?.Year ?? monthEnd.Year) >= monthEnd.Year,
+                BookingInterval.Yearly => StartDate.Month == monthStart.Month
+                                        && StartDate.Year <= monthStart.Year
+                                        && (EndDate?.Year ?? monthEnd.Year) >= monthEnd.Year,
+                _ => false,
+            };
+        }
     }
 }
