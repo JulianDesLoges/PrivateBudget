@@ -14,15 +14,19 @@
         }
         else
         {
-            <canvas width="500" height="500" id="budget-donut" class="me-5"></canvas>
+            <canvas width="600" height="600" id="budget-donut" class="me-5"></canvas>
 
 
             
 
             <ul class="list-group list-group-flush justify-content-center">
-                <li class="list-group-item d-flex justify-content-between mb-5" style="border-bottom:none">
+                <li class="list-group-item d-flex justify-content-between" style="border-bottom:none">
                     <div>Total available</div>
                     <ColoredCurrencyComponent CurrencySymbol="'€'" Value="@IncomeCategory.MonthlyBudget"></ColoredCurrencyComponent>
+                </li>
+                <li class="list-group-item d-flex justify-content-between mb-5" style="border-bottom:none">
+                    <div>Total unused</div>
+                    <ColoredCurrencyComponent CurrencySymbol="'€'" Value="@_totalUnused"></ColoredCurrencyComponent>
                 </li>
 
                 @foreach (var category in Categories?.Skip(1).OrderByDescending(x => x.MonthlyBudget))
@@ -50,6 +54,30 @@
     public Category? IncomeCategory { get; set; }
 
 
+    private decimal _totalUnused;
+
+    protected override void OnInitialized()
+    {
+        if (IncomeCategory == null) { return; }
+        if (IncomeCategory.MonthlyBudget == null) { return; }
+        if (Categories == null) { return; }
+
+        _totalUnused = (decimal)IncomeCategory.MonthlyBudget;
+
+
+        foreach (var category in Categories.Skip(1))
+        {
+            if (category.Name != IncomeCategory?.Name)
+            {
+                if (category.MonthlyBudget != null)
+                {
+                    _totalUnused -= (decimal)category.MonthlyBudget;
+                }
+            }
+        }
+    }
+
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
 
@@ -60,24 +88,23 @@
 
         if (IncomeCategory != null)
         {
-            decimal totalIncome = Categories.Skip(1).ToList().Find(x => x.Name == IncomeCategory.Name)?.MonthlyBudget ?? 1;
+            decimal totalIncome = IncomeCategory?.MonthlyBudget ?? 1;
             var dict = new Dictionary<string, decimal>();
 
 
             foreach (var category in Categories.Skip(1))
             {
-                if (category.Name != IncomeCategory.Name)
+                if (category.Name != IncomeCategory?.Name)
                 {
                     if (category.MonthlyBudget != null)
                     {
-                        dict.Add(category.Color, ((category.MonthlyBudget ?? 0) / totalIncome));
+                        dict.Add(category.Color, (decimal)category.MonthlyBudget / totalIncome);
                     }
                 }
             }
 
 
             dict = dict.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, y => y.Value);
-
 
             await JS.InvokeVoidAsync(
                 "createDonutChart",
