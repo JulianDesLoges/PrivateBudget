@@ -1,4 +1,5 @@
 ﻿@using PrivateBudget.Client.Models;
+@using PrivateBudget.Client.Utils;
 @using PrivateBudget.Components.Editors
 
 <EntryEditor @ref="_entryEditor"></EntryEditor>
@@ -13,6 +14,12 @@
             <div class="row align-items-center">
                 <div class="col-xxl-5">
                     <MonthSelect Start="_firstDate" End="_lastDate" Disabled="false" @ref="_monthSelect" />
+                </div>
+                <div class="col-xxl-2">
+                    <div class="form-floating">
+                        <input type="date" class="form-control" id="start-date" placeholder="Book Until" @bind="BookUntil"/>
+                        <label for="start-date" class="form-label">Book Until</label>
+                    </div>
                 </div>
             </div>
         </div>
@@ -32,7 +39,7 @@
             <tbody>
                 @foreach (var booking in CurrentBookingMonth.Bookings.OrderBy(x => x.Date))
                 {
-                    <tr>
+                    <tr class="@(booking.Date > _bookUntil ? "upcoming" : "")">
                         <td>@booking.Date</td>
                         <td>@booking.Name</td>
                         <td><ColoredCurrencyComponent CurrencySymbol="'€'" Value="@booking.Value" /></td>
@@ -50,7 +57,7 @@
                 <tr style="border:transparent;">
                     <td><strong>Net</strong></td>
                     <td></td>
-                    <td><ColoredCurrencyComponent CurrencySymbol="'€'" Value="@CurrentBookingMonth.Net"></ColoredCurrencyComponent></td>
+                    <td><ColoredCurrencyComponent CurrencySymbol="'€'" Value="@CurrentBookingMonth.Net" /></td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -83,6 +90,21 @@
     private DateOnly _firstDate;
     private DateOnly _lastDate;
 
+    private DateOnly BookUntil
+    {
+        get => _bookUntil;
+        set
+        {
+            if (value != _bookUntil)
+            {
+                _bookUntil = value;
+                BookUntil_Changed();
+            }
+        }
+    }
+
+    private DateOnly _bookUntil;
+
     private Dictionary<DateOnly, BookingMonth> _bookingMonths = new Dictionary<DateOnly, BookingMonth>();
 
     private BookingMonth CurrentBookingMonth { get; set; } = new BookingMonth(new DateOnly());
@@ -109,8 +131,10 @@
             _lastDate = _firstDate;
         }
 
+
         _firstDate = new DateOnly(_firstDate.Year, _firstDate.Month, 1);
         _lastDate = new DateOnly(_lastDate.Year, _lastDate.Month, 1);
+        _bookUntil = DateOnly.FromDateTime(DateTime.Now);
 
         GenerateBookingMonths();
 
@@ -140,13 +164,13 @@
             _entryEditor.EntryModified += EntryModified;
 
 
-            _monthSelect.DateChanged += DateChanged;
+            _monthSelect.DateChanged += Date_Changed;
             StateHasChanged();
         }
     }
 
 
-    private void DateChanged() 
+    private void Date_Changed() 
     {
         if (_monthSelect == null)
         {
@@ -155,6 +179,22 @@
 
         CurrentBookingMonth = _bookingMonths[_monthSelect.Value];
         _total = CalculateTotal(_monthSelect.Value);
+
+        StateHasChanged();
+    }
+
+
+    private void BookUntil_Changed()
+    {
+        if (_monthSelect == null)
+        {
+            throw new NullReferenceException("_monthSelect is null.");
+        }
+
+        GenerateBookingMonths();
+        CurrentBookingMonth = _bookingMonths[_monthSelect.Value];
+        _total = CalculateTotal(_monthSelect.Value);
+
 
         StateHasChanged();
     }
@@ -179,7 +219,7 @@
             {
                 if (entry.HappensThisMonth(month))
                 {
-                    _bookingMonths[month].AddBooking(new Booking(entry, month.Month, month.Year));
+                    _bookingMonths[month].AddBooking(new Booking(entry, month.Month, month.Year), BookUntil);
                 }
             }
         }

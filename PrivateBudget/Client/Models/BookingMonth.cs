@@ -1,4 +1,6 @@
-﻿namespace PrivateBudget.Client.Models
+﻿using PrivateBudget.Client.Utils;
+
+namespace PrivateBudget.Client.Models
 {
     public class BookingMonth
     {
@@ -21,10 +23,15 @@
         }
 
 
-        public void AddBooking(Booking booking)
+        public void AddBooking(Booking booking, DateOnly bookUtil)
         {
             _bookings.Add(booking);
-            Net += booking.Value;
+
+            // Only add to net if happened already
+            if (booking.Date <= bookUtil)
+            {
+                Net += booking.Value;
+            }
         }
     }
 }

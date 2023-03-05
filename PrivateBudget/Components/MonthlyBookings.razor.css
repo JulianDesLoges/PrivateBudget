@@ -6,3 +6,7 @@
 .oi-trash:hover {
     color: var(--bs-danger);
 }
+
+.upcoming {
+    opacity: 0.5;
+}
