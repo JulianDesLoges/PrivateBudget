@@ -21,6 +21,9 @@
                         <label for="start-date" class="form-label">Book Until</label>
                     </div>
                 </div>
+                <div class="col-xxl-5">
+                    <input type="range" min="1" max="@DateTime.DaysInMonth(BookUntil.Year, BookUntil.Month)" @bind-value="BookRangeValue" @bind-value:event="oninput" class="form-range">
+                </div>
             </div>
         </div>
         <table class="table">
@@ -86,9 +89,14 @@
     private EntryEditor? _entryEditor;
     private MonthSelect? _monthSelect;
 
-
     private DateOnly _firstDate;
     private DateOnly _lastDate;
+
+    private int BookRangeValue
+    {
+        get => BookUntil.Day;
+        set => BookUntil = new DateOnly(BookUntil.Year, BookUntil.Month, value);
+    }
 
     private DateOnly BookUntil
     {
@@ -195,6 +203,7 @@
         CurrentBookingMonth = _bookingMonths[_monthSelect.Value];
         _total = CalculateTotal(_monthSelect.Value);
 
+        
 
         StateHasChanged();
     }
