@@ -12,7 +12,7 @@
     <div class="card-body">
         <div class="container mb-5">
             <div class="row align-items-center">
-                <div class="col-xxl-5">
+                <div class="col-xxl-4">
                     <MonthSelect Start="_firstDate" End="_lastDate" Disabled="false" @ref="_monthSelect" />
                 </div>
                 <div class="col-xxl-2">
@@ -21,7 +21,7 @@
                         <label for="start-date" class="form-label">Book Until</label>
                     </div>
                 </div>
-                <div class="col-xxl-5">
+                <div class="col-xxl-4">
                     <input type="range" min="1" max="@DateTime.DaysInMonth(BookUntil.Year, BookUntil.Month)" @bind-value="BookRangeValue" @bind-value:event="oninput" class="form-range">
                 </div>
             </div>
